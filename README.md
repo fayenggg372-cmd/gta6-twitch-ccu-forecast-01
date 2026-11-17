@@ -92,6 +92,16 @@ under a second per case on the kit's inputs. Output is exactly
 `{"hours": [{"hour": h, "q": [q05, q25, q50, q75, q95]}, ...]}`,
 hours 2–24, quantiles finite, > 0, ≤ 1e9, non-decreasing.
 
+## Submission status
+
+Built and validated locally; **not submitted**. Local git commit
+`cbd429bc50b8159d9e7b03a308dfc6e261299ba2`. Account @plucky-owl-46
+(escrow funded, 250 USDC; entry fee none). Deadline
+2026-11-19T01:00:00Z. To submit: create the public GitHub repo under
+Seto's account, push this commit, bundle the transcripts (see
+`dev/BUNDLE.md` — the bundle must be run from the top-level agent so
+the usage rows attach), and submit only with Seto's explicit approval.
+
 ## Data & attribution
 
 - Viewer counts: SullyGnome.com hourly Twitch category averages
