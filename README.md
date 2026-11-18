@@ -38,7 +38,7 @@ the case file, and it refits itself at run time from the case's own
      (GTA VI's will be) cannot extrapolate the curve into a collapse;
    - the pool's empirical quantiles of `r_h`.
    
-   The median is a 60/40 blend (fit / empirical) in log space; the
+   The median is a 80/20 blend (fit / empirical) in log space; the
    spread averages the two estimates' deviations, so the bands stay
    honest about how much launch days differ. Quantiles are lightly
    smoothed across neighbouring hours. The forecast is
@@ -51,9 +51,12 @@ roughly 1.2×–2.4× hour 1 for large rolling launches. A pure
 `ln(v1)` regression looked even better on the practice cases but
 extrapolates to an evening *below* hour 1 at GTA-VI scale (0.5×–0.7×),
 which contradicts the unlock mechanics — the US, the largest Twitch
-market, is still locked at hour 1. The blend is the hedge: at an
-hour-1 print of 1,000,000 it forecasts a median evening peak of
-~1.5× hour 1, with a 90% band of roughly 0.85×–4.2×.
+market, is still locked at hour 1. The blend is the hedge, and the
+fit is size-aware: bigger launches ramp less from hour 1, which the
+practice launches confirm — so the 80/20 weight keeps the forecast
+sane at GTA-VI scale, where hour 1 is larger than any past launch's.
+At an hour-1 print of 1,000,000 it forecasts a median evening peak
+of ~1.35× hour 1, with a 90% band of roughly 0.80×–4.0×.
 
 ## Validation (local, reproducible)
 
@@ -68,11 +71,22 @@ python3 dev/validate.py
 
 | case | game | hour-1 viewers | pinball loss | typical miss | 90% coverage |
 |---|---|---|---|---|---|
-| p00 | Marvel's Wolverine | 23,357 | 0.2673 | 57.6% | 0.96 |
-| p01 | Red Dead Redemption 2 | 116,550 | 0.1294 | 22.6% | 1.00 |
-| p02 | God of War Ragnarök | 269,517 | 0.1316 | 18.4% | 0.96 |
-| p03 | Marvel's Spider-Man 2 | 119,087 | 0.2219 | 34.4% | 0.70 |
-| **mean** | | | **0.1876** | | **0.90** |
+| p00 | Marvel's Wolverine | 23,357 | 0.2372 | 48.0% | 1.00 |
+| p01 | Red Dead Redemption 2 | 116,550 | 0.1349 | 24.7% | 1.00 |
+| p02 | God of War Ragnarök | 269,517 | 0.1246 | 17.6% | 1.00 |
+| p03 | Marvel's Spider-Man 2 | 119,087 | 0.2162 | 33.3% | 0.70 |
+| **mean** | | | **0.1782** | | **0.92** |
+
+The blend weight was raised 0.6 → 0.8 after a grid test on these
+four cases (0.6: 0.1876 / 0.90 coverage; 0.8: 0.1782 / 0.92;
+1.0: 0.1716 / 0.92). The weight stops at 0.8 rather than 1.0: the
+fit is a line through eight noisy launches, so at GTA-VI scale the
+20% empirical weight keeps the evening peak well above hour 1
+(1.35× at a 1,000,000 hour-1 print, vs 1.18× for the pure fit).
+Rejected on the same grid: the wider simultaneous+unknown pool
+(0.2689, and an evening peak below hour 1 at GTA-VI scale), wider
+bands (0.1921 at 1.15× spread), median-shape amplification (p03
+worse), and dropping the hour smoothing (0.1890).
 
 House persistence baseline on the same cases: **0.3871** (matches the
 0.387 stated in the competition rules, which checks the scoring).

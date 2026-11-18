@@ -24,7 +24,7 @@ curve of every past launch in the case's `comparables`:
        range, so a first hour larger than any past launch (GTA VI's
        will be) cannot extrapolate the curve into a collapse; and
     2. the pool's empirical quantiles of r_h.
-  The median is a 60/40 blend (fit/empirical) in log space and the
+  The median is a 80/20 blend (fit/empirical) in log space and the
   spread averages the two estimates' deviations, so the bands stay
   honest about how much launch days differ. Quantiles are lightly
   smoothed across neighbouring hours.
@@ -34,7 +34,7 @@ Why not the house persistence baseline? Persistence says every hour
 equals hour 1. Past launches do not do that: they dip overnight, step
 up at the US unlock (hours 5-6 and 8-9 UTC) and peak in the US evening
 at roughly 1.2x-2.4x hour 1 for large rolling launches. On the four
-practice launches this program scores a mean pinball loss of ~0.19
+practice launches this program scores a mean pinball loss of ~0.18
 against the house baseline's 0.39 (see README.md / dev/validate.py).
 
 Output: /output/<id>.out = {"hours": [{"hour": h, "q": [q05, q25, q50,
@@ -61,10 +61,20 @@ OUTPUT_DIR = Path(os.environ.get("MAKEFUN_OUTPUT_DIR", "/output"))
 LEVELS = [0.05, 0.25, 0.5, 0.75, 0.95]
 
 # Blend weight of the regression fit vs the pool's empirical quantiles
-# for the log-median (0.6 fit / 0.4 empirical). Tuned on the practice
-# launches; the blend is what keeps the forecast sane when hour 1 is
-# larger than any past launch's.
-W_REG = 0.6
+# for the log-median (0.8 fit / 0.2 empirical). The fit is size-aware:
+# bigger launches ramp less from hour 1, and the practice launches show
+# it -- the small launch (Wolverine, v1 23k) ramps ~9x by the evening
+# while the biggest (Ragnarok, v1 270k) ramps ~1.7x, so the empirical
+# median alone (which ignores size) under-forecasts small launches and
+# over-forecasts large ones. Grid-tested on the four practice cases:
+# mean pinball loss 0.1876 at 0.6 -> 0.1782 at 0.8 -> 0.1716 at 1.0,
+# with 90% coverage 0.90 -> 0.92. The weight stops at 0.8, not 1.0:
+# the fit is a line through eight noisy launches with one high-leverage
+# point (the largest launch), so at GTA-VI scale -- far above the
+# pool's range -- the 20% empirical weight keeps the hedge that the
+# evening peak stays well above hour 1 (1.35x at a 1,000,000 hour-1
+# print, vs 1.18x for the pure fit and 1.55x for the old 0.6 blend).
+W_REG = 0.8
 # Minimum pool size before falling back to a wider pool.
 MIN_POOL = 6
 # Persistence baseline's spread (house baseline), used only when the
